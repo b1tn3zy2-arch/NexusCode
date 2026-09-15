@@ -151,11 +151,90 @@ export function ContinuousPanel() {
   const [untilDone, setUntilDone] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Budgets actually sent with the running mission. The form stays editable,
+  // but the bars must show the run's limits, not whatever is typed now.
+  const [runConfig, setRunConfig] = useState<{
+    maxActions: number;
+    maxTimeMinutes: number;
+    maxCostUsd: number;
+  } | null>(null);
+  // Ticker so elapsed time stays live while a mission runs.
+  const [, setTick] = useState(0);
+
+  // Persist form settings: tab switches remount the panel, and silent
+  // resets to defaults look like "wrong numbers" mid-run.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("nc-cont-settings-v1");
+      if (!raw) return;
+      const s = JSON.parse(raw) as Record<string, unknown>;
+      if (typeof s.approvalMode === "string" && (s.approvalMode === "auto" || s.approvalMode === "manual"))
+        setApprovalMode(s.approvalMode);
+      if (typeof s.maxActions === "number" && Number.isFinite(s.maxActions))
+        setMaxActions(Math.max(1, Math.min(1000, Math.round(s.maxActions))));
+      if (typeof s.maxTimeMinutes === "number" && Number.isFinite(s.maxTimeMinutes))
+        setMaxTimeMinutes(Math.max(5, Math.min(1440, Math.round(s.maxTimeMinutes))));
+      if (typeof s.maxCostUsd === "number" && Number.isFinite(s.maxCostUsd))
+        setMaxCostUsd(Math.max(0.1, Math.min(1000, s.maxCostUsd)));
+      if (typeof s.checkpoints === "boolean") setCheckpoints(s.checkpoints);
+      if (typeof s.detectSubtasks === "boolean") setDetectSubtasks(s.detectSubtasks);
+      if (typeof s.autoVerify === "boolean") setAutoVerify(s.autoVerify);
+      if (typeof s.verifyText === "string") setVerifyText(s.verifyText.slice(0, 2000));
+      if (typeof s.maxRetries === "number" && Number.isFinite(s.maxRetries))
+        setMaxRetries(Math.max(0, Math.min(10, Math.round(s.maxRetries))));
+      if (typeof s.untilDone === "boolean") setUntilDone(s.untilDone);
+      if (typeof s.goal === "string") setGoal(s.goal.slice(0, 8000));
+    } catch {
+      /* corrupt cache — defaults win */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "nc-cont-settings-v1",
+        JSON.stringify({
+          approvalMode,
+          maxActions,
+          maxTimeMinutes,
+          maxCostUsd,
+          checkpoints,
+          detectSubtasks,
+          autoVerify,
+          verifyText,
+          maxRetries,
+          untilDone,
+          goal,
+        }),
+      );
+    } catch {
+      /* storage full/blocked — settings just won't persist */
+    }
+  }, [
+    approvalMode,
+    maxActions,
+    maxTimeMinutes,
+    maxCostUsd,
+    checkpoints,
+    detectSubtasks,
+    autoVerify,
+    verifyText,
+    maxRetries,
+    untilDone,
+    goal,
+  ]);
 
   useEffect(() => {
     void continuousApi.status().then(setSnapshot).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!snapshot.running && !snapshot.paused) return;
+    const id = window.setInterval(() => setTick((n) => n + 1), 30000);
+    return () => window.clearInterval(id);
+  }, [snapshot.running, snapshot.paused]);
 
   const running = snapshot.running;
   // Belt-and-suspenders: wire data must never crash render.
@@ -196,6 +275,7 @@ export function ContinuousPanel() {
         maxRetriesPerStep: maxRetries,
         untilDone,
       });
+      setRunConfig({ maxActions, maxTimeMinutes, maxCostUsd });
       setSnapshot(snap);
     } catch (e) {
       setError(String(e));
@@ -217,8 +297,24 @@ export function ContinuousPanel() {
   const resumeSaved = async () => {
     setError(null);
     try {
-      const snap = await continuousApi.resumeSaved();
-      setSnapshot(snap);
+      const res = await continuousApi.resumeSaved();
+      // Show the resumed run's real budgets, and sync the form to them.
+      setRunConfig({
+        maxActions: res.config.maxActions,
+        maxTimeMinutes: res.config.maxTimeMinutes,
+        maxCostUsd: res.config.maxCostUsd,
+      });
+      setApprovalMode(res.config.approvalMode);
+      setMaxActions(res.config.maxActions);
+      setMaxTimeMinutes(res.config.maxTimeMinutes);
+      setMaxCostUsd(res.config.maxCostUsd);
+      setCheckpoints(res.config.checkpoints);
+      setDetectSubtasks(res.config.detectSubtasks);
+      setAutoVerify(res.config.autoVerify ?? true);
+      setVerifyText((res.config.verifyCommands ?? []).join("\n"));
+      setMaxRetries(res.config.maxRetriesPerStep ?? 3);
+      setUntilDone(res.config.untilDone ?? true);
+      setSnapshot(res.snapshot);
     } catch (e) {
       setError(t("cont.noSavedRun", "нет сохранённого запуска"));
     }
@@ -376,18 +472,18 @@ export function ContinuousPanel() {
             <BudgetBar
               label={t("cont.budgetSteps", "Шаги")}
               cur={snapshot.actionsCount}
-              max={maxActions}
+              max={runConfig?.maxActions ?? maxActions}
             />
             <BudgetBar
               label={t("cont.budgetTime", "Время")}
               cur={elapsedMin}
-              max={maxTimeMinutes}
+              max={runConfig?.maxTimeMinutes ?? maxTimeMinutes}
               suffix={t("cont.minShort", "мин")}
             />
             <BudgetBar
               label="$"
               cur={snapshot.costUsd}
-              max={maxCostUsd}
+              max={runConfig?.maxCostUsd ?? maxCostUsd}
               money
             />
           </div>

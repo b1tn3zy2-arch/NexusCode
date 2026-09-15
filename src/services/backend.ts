@@ -239,7 +239,10 @@ export const continuousApi = {
   status: () => invoke<ContinuousSnapshot>("continuous_status"),
   rollback: (checkpointId: string) =>
     invoke<void>("continuous_rollback", { checkpointId }),
-  resumeSaved: () => invoke<ContinuousSnapshot>("continuous_resume_saved"),
+  resumeSaved: () =>
+    invoke<{ snapshot: ContinuousSnapshot; config: ContinuousConfig }>(
+      "continuous_resume_saved",
+    ),
   detectValidation: (workdir?: string | null) =>
     invoke<string[]>("continuous_detect_validation", {
       workdir: workdir ?? null,

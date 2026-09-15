@@ -41,6 +41,14 @@ pub struct ContinuousHandle {
     pub control: Arc<ContControl>,
 }
 
+/// Resume response: live snapshot plus the budgets it runs under.
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResumeResult {
+    pub snapshot: ContinuousSnapshot,
+    pub config: ContinuousConfig,
+}
+
 fn push(app: &AppHandle, snap: &ContinuousSnapshot) {
     let _ = app.emit(
         CONTINUOUS_EVENT,
@@ -174,18 +182,84 @@ fn tail4000(s: &str) -> String {
 }
 
 /// Run every verify command sequentially. Returns (all_ok, failing_cmd, tail).
+///
+/// Empty-output failures are treated as infra flakes (missing/locked
+/// toolchain, tree mutated mid-run): the command is retried transparently
+/// before it counts against the step, and the tail always carries cwd +
+/// binary resolution so a repeated flake is diagnosable, never silent.
 async fn run_verify_all(workdir: &str, cmds: &[String]) -> (bool, String, String) {
     for cmd in cmds {
-        let wd = workdir.to_string();
-        let cmd_s = cmd.clone();
-        let outcome = tokio::task::spawn_blocking(move || run_test_command_sync(&wd, &cmd_s))
-            .await
-            .unwrap_or(crate::loop_engine::TestOutcome { ok: false, output: "join failed".into() });
-        if !outcome.ok {
-            return (false, cmd.clone(), tail4000(&outcome.output));
+        let mut ok = false;
+        let mut tail = String::new();
+        // Attempt 1 + up to 2 transparent retries for empty-output flakes.
+        for _ in 0..3 {
+            let wd = workdir.to_string();
+            let cmd_s = cmd.clone();
+            let outcome = tokio::task::spawn_blocking(move || run_test_command_sync(&wd, &cmd_s))
+                .await
+                .unwrap_or(crate::loop_engine::TestOutcome { ok: false, output: "join failed".into() });
+            if outcome.ok {
+                ok = true;
+                tail.clear();
+                break;
+            }
+            tail = tail4000(&outcome.output);
+            if !tail.trim().is_empty() {
+                break; // real failure output — no point retrying blindly
+            }
+            // Empty pipes + nonzero exit: toolchain/FS flake. Back off, retry.
+            tokio::time::sleep(Duration::from_secs(10)).await;
+        }
+        if !ok {
+            if tail.trim().is_empty() {
+                tail = infra_note(workdir, cmd);
+            }
+            // Prepend context, keep the whole tail bounded.
+            let headed = format!("cwd: {}\ncmd: {}\n{}", workdir, cmd, tail);
+            let bounded: String = headed
+                .chars()
+                .rev()
+                .take(4000)
+                .collect::<String>()
+                .chars()
+                .rev()
+                .collect();
+            return (false, cmd.clone(), bounded);
         }
     }
     (true, String::new(), String::new())
+}
+
+/// Human-readable note for silent command failures: does the binary even
+/// resolve in the backend's environment?
+fn infra_note(workdir: &str, cmd: &str) -> String {
+    let bin = cmd.split_whitespace().next().unwrap_or(cmd);
+    let resolved = check_bin_resolves(bin);
+    format!(
+        "[infra flake] command exited nonzero with EMPTY stdout+stderr after 3 tries. \
+Binary '{bin}' resolves: {resolved}. \
+Possible causes: toolchain mid-install, antivirus lock, or another process mutating '{workdir}'. \
+Fix the environment (or wait out the parallel install) and resume — the code may be fine."
+    )
+}
+
+fn check_bin_resolves(bin: &str) -> String {
+    #[cfg(target_os = "windows")]
+    let probe = std::process::Command::new("cmd")
+        .args(["/C", &format!("where {bin}")])
+        .output();
+    #[cfg(not(target_os = "windows"))]
+    let probe = std::process::Command::new("sh")
+        .args(["-c", &format!("command -v {bin}")])
+        .output();
+    match probe {
+        Ok(out) if out.status.success() => {
+            let p = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            if p.is_empty() { "no (empty where-output)".into() } else { p }
+        }
+        Ok(out) => format!("no (exit {:?})", out.status.code()),
+        Err(e) => format!("probe failed: {e}"),
+    }
 }
 
 enum WaitRes {
@@ -880,7 +954,7 @@ pub async fn continuous_start(
 pub async fn continuous_resume_saved(
     app: AppHandle,
     state: State<'_, AppState>,
-) -> Result<ContinuousSnapshot, String> {
+) -> Result<ResumeResult, String> {
     ensure_idle(&state)?;
     let saved = load_saved_run(&app)?;
     if matches!(
@@ -939,7 +1013,7 @@ pub async fn continuous_resume_saved(
     tokio::spawn(run(
         app.clone(),
         Arc::clone(&control),
-        saved.config,
+        saved.config.clone(),
         workdir,
         port,
         true,
@@ -950,7 +1024,10 @@ pub async fn continuous_resume_saved(
     });
 
     let snapshot_now = control.snapshot.lock().unwrap().clone();
-    Ok(snapshot_now)
+    Ok(ResumeResult {
+        snapshot: snapshot_now,
+        config: saved.config,
+    })
 }
 
 /// Preview auto-detected verify commands for a workdir (UI helper).
