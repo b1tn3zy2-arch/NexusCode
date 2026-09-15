@@ -22,6 +22,10 @@ pub struct ParsedServer {
     pub host: String,
     pub port: u16,
     pub outbound: Value,
+    /// Original share-link (secrets included — vault only, never log).
+    /// Lets future versions re-parse stored servers after parser fixes.
+    #[serde(default)]
+    pub link: Option<String>,
 }
 
 /// Sanitize + split country code in one step for provider-given names.
@@ -289,6 +293,7 @@ fn parse_vless(link: &str) -> Result<ParsedServer, String> {
         host,
         port,
         outbound: Value::Object(ob),
+        link: None,
     })
 }
 
@@ -360,6 +365,7 @@ fn parse_vmess(link: &str) -> Result<ParsedServer, String> {
         host,
         port,
         outbound: Value::Object(ob),
+        link: None,
     })
 }
 
@@ -408,6 +414,7 @@ fn parse_ss(link: &str) -> Result<ParsedServer, String> {
         host,
         port,
         outbound: Value::Object(ob),
+        link: None,
     })
 }
 
@@ -451,6 +458,7 @@ fn parse_trojan(link: &str) -> Result<ParsedServer, String> {
         host,
         port,
         outbound: Value::Object(ob),
+        link: None,
     })
 }
 
@@ -510,6 +518,7 @@ fn parse_hysteria2(link: &str) -> Result<ParsedServer, String> {
         host,
         port,
         outbound: Value::Object(ob),
+        link: None,
     })
 }
 
@@ -559,6 +568,7 @@ fn parse_tuic(link: &str) -> Result<ParsedServer, String> {
         host,
         port,
         outbound: Value::Object(ob),
+        link: None,
     })
 }
 
@@ -569,7 +579,7 @@ pub fn parse_link(link: &str) -> Result<ParsedServer, String> {
         return Err("empty link".into());
     }
     let scheme = t.split("://").next().unwrap_or("").to_lowercase();
-    match scheme.as_str() {
+    let mut s = match scheme.as_str() {
         "vless" => parse_vless(t),
         "vmess" => parse_vmess(t),
         "ss" | "shadowsocks" => parse_ss(t),
@@ -577,7 +587,11 @@ pub fn parse_link(link: &str) -> Result<ParsedServer, String> {
         "hysteria2" | "hy2" => parse_hysteria2(t),
         "tuic" => parse_tuic(t),
         other => Err(format!("unsupported scheme: {other} (need vless/vmess/ss/trojan/hysteria2/tuic)")),
-    }
+    }?;
+    // Keep the original link (secrets inside — vault only, never log) so
+    // stored servers can be re-parsed after future parser fixes.
+    s.link = Some(t.to_string());
+    Ok(s)
 }
 
 /// Parse a subscription body: base64 blob or plain lines of share-links.

@@ -9,6 +9,14 @@ export interface VpnServerJson {
   host: string;
   port: number;
   outbound: unknown;
+  /** Original share-link (secrets inside — vault only, never render/log). */
+  link?: string | null;
+  /**
+   * Ephemeral: set on load when the stored outbound looks like it was
+   * parsed by an older parser version (TLS-family on :443 with no tls
+   * block and no link to re-parse from). Never persisted.
+   */
+  needsReimport?: boolean;
 }
 
 const COUNTRY_NAMES: Record<string, string> = {

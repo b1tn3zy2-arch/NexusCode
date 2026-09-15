@@ -14,7 +14,21 @@ function normalizeServer(s: VpnServerJson): VpnServerJson {
     `${s.protocol} ${s.host}`,
     s.country,
   );
-  return { ...s, name, country };
+  return { ...s, name, country, needsReimport: looksStale(s) };
+}
+
+/**
+ * Stored outbound parsed by an older parser: TLS-family protocols on :443
+ * practically always need a tls block (reality/TLS). Without the original
+ * link we cannot rebuild it — flag for re-import instead of failing
+ * cryptically at connect time.
+ */
+function looksStale(s: VpnServerJson): boolean {
+  if (s.link) return false;
+  if (!["vless", "vmess", "trojan"].includes(s.protocol)) return false;
+  if (s.port !== 443) return false;
+  const ob = s.outbound as { tls?: unknown } | null | undefined;
+  return !ob || ob.tls == null;
 }
 import { toast } from "./toastStore";
 
@@ -113,7 +127,24 @@ export const useVpnStore = create<VpnState>()(
           const blob = await vault.get(VPN_SERVERS_ACCOUNT);
           if (blob) {
             const arr = JSON.parse(blob) as VpnServerJson[];
-            if (Array.isArray(arr)) get().setServers(arr);
+            if (Array.isArray(arr)) {
+              // Heal pass: servers that kept their original link are
+              // re-parsed with the current parser (fixes stale outbounds
+              // after parser updates). Stable ids keep favorites/activeId.
+              const healed: VpnServerJson[] = [];
+              for (const s of arr) {
+                if (s.link) {
+                  try {
+                    healed.push(await vpnApi.parseLink(s.link));
+                    continue;
+                  } catch {
+                    /* fall through with the stored copy, flagged */
+                  }
+                }
+                healed.push(s);
+              }
+              get().setServers(healed);
+            }
           }
         } catch {
           /* vault unavailable — run without saved servers */
@@ -134,6 +165,14 @@ export const useVpnStore = create<VpnState>()(
         const srv = st.servers.find((x) => x.id === id);
         if (!srv) {
           set({ error: "Сервер не найден" });
+          return;
+        }
+        if (srv.needsReimport) {
+          const msg =
+            `Ключ «${srv.name}» сохранён старой версией парсера — удалите его ` +
+            `и добавьте заново (или обновите подписку)`;
+          set({ status: "error", error: msg });
+          toast.error(msg);
           return;
         }
         set({ status: "connecting", error: null });

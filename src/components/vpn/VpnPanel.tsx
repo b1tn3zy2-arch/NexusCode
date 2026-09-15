@@ -454,6 +454,15 @@ export function VpnPanel() {
                   <span className="truncate">
                     {s.host}:{s.port}
                   </span>
+                  {s.needsReimport && (
+                    <span
+                      className="shrink-0 rounded px-1 text-[10px] font-semibold"
+                      style={{ background: "#eab30822", color: "#eab308" }}
+                      title={t("vpn.staleHint", "Ключ сохранён старой версией — удалите и добавьте заново (или обновите подписку)")}
+                    >
+                      {t("vpn.stale", "устарел")}
+                    </span>
+                  )}
                 </div>
               </div>
             );
