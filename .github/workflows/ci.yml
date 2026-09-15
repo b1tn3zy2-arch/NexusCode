@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  frontend:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+
+  rust-check:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      # sidecars + SHA256SUMS are generated, not committed (see .gitignore)
+      - run: node scripts/download-opencode.mjs
+      - run: node scripts/download-singbox.mjs
+      - run: node scripts/download-python.mjs
+      - run: cargo check --all-targets
+        working-directory: src-tauri
+        env:
+          RUSTFLAGS: -D warnings
+
+  tests:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      - run: node scripts/download-opencode.mjs
+      - run: node scripts/download-singbox.mjs
+      - run: node scripts/download-python.mjs
+      # wrapper stamps the Win32 manifest into test binaries (see scripts/)
+      - run: powershell -File scripts/cargo-test.ps1 --lib
+      - run: cargo run --example rule_tests
+        working-directory: src-tauri
+      - run: cargo run --example loop_tests
+        working-directory: src-tauri
+      - run: cargo run --example cont_tests
+        working-directory: src-tauri
+      - run: cargo run --example vpn_tests
+        working-directory: src-tauri
+
+  frontend-build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
