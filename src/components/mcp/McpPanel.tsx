@@ -141,7 +141,12 @@ function McpRow({
           {local ? "local" : "remote"} · {entry.scope === "project" ? "proj" : "glob"}
         </span>
         <label className="flex shrink-0 cursor-pointer items-center" title={enabled ? "Включён" : "Выключен"}>
-          <input type="checkbox" checked={enabled} onChange={(e) => void toggle(e.target.checked)} />
+          <input
+            type="checkbox"
+            className="h-4 w-4 shrink-0 cursor-pointer rounded accent-[#6366f1]"
+            checked={enabled}
+            onChange={(e) => void toggle(e.target.checked)}
+          />
         </label>
       </div>
       <div className="mt-1 truncate font-mono text-[11px]" style={{ color: "var(--text-tertiary)" }} title={describeServer(entry.server)}>
