@@ -6,6 +6,15 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-09-15
+
+### Fixed
+- Release builds no longer pop console windows: every child process
+  (git, cmd/test runner, sing-box check, where-probe) now uses
+  CREATE_NO_WINDOW (release has no console of its own)
+- VPN: prefer self-contained MSVC sing-box on Windows (GNU build died
+  with 0xC0000142 when spawned from the GUI app)
+
 ### Added
 - Cursor-style AI review: side-by-side diff per file (`checkpoint_file`,
   `checkpoint_hunks`, `checkpoint_restore_file` backend commands), per-file

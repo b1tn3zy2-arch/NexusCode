@@ -1,6 +1,6 @@
 [package]
 name = "nexuscode"
-version = "1.0.0"
+version = "1.0.1"
 description = "NexusCode — Where Code Meets Intelligence"
 authors = ["V1nskiy"]
 edition = "2021"
