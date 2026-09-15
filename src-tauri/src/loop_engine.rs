@@ -54,9 +54,10 @@ fn set_stop_reason(snap: &Arc<Mutex<LoopSnapshot>>, phase_done: bool, reason: &s
 // ---------------------------------------------------------------------------
 
 pub(crate) fn git(workdir: &str, args: &[&str]) -> Result<String, String> {
-    let out = std::process::Command::new("git")
-        .args(args)
-        .current_dir(workdir)
+    let mut cmd = std::process::Command::new("git");
+    cmd.args(args).current_dir(workdir);
+    crate::server_manager::hide_console(&mut cmd);
+    let out = cmd
         .output()
         .map_err(|e| format!("git spawn failed: {e}"))?;
     if !out.status.success() {
@@ -184,12 +185,15 @@ pub(crate) struct TestOutcome {
 
 pub(crate) fn run_test_command_sync(workdir: &str, command: &str) -> TestOutcome {
     #[cfg(target_os = "windows")]
-    let spawned = std::process::Command::new("cmd")
-        .args(["/C", command])
-        .current_dir(workdir)
-        .stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::piped())
-        .spawn();
+    let spawned = {
+        let mut c = std::process::Command::new("cmd");
+        c.args(["/C", command])
+            .current_dir(workdir)
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped());
+        crate::server_manager::hide_console(&mut c);
+        c.spawn()
+    };
     #[cfg(not(target_os = "windows"))]
     let spawned = std::process::Command::new("sh")
         .args(["-c", command])

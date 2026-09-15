@@ -245,9 +245,12 @@ Fix the environment (or wait out the parallel install) and resume — the code m
 
 fn check_bin_resolves(bin: &str) -> String {
     #[cfg(target_os = "windows")]
-    let probe = std::process::Command::new("cmd")
-        .args(["/C", &format!("where {bin}")])
-        .output();
+    let probe = {
+        let mut c = std::process::Command::new("cmd");
+        c.args(["/C", &format!("where {bin}")]);
+        crate::server_manager::hide_console(&mut c);
+        c.output()
+    };
     #[cfg(not(target_os = "windows"))]
     let probe = std::process::Command::new("sh")
         .args(["-c", &format!("command -v {bin}")])

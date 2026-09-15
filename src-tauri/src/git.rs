@@ -48,9 +48,10 @@ pub struct Commit {
 }
 
 fn git(args: &[&str], root: &str) -> Result<String, String> {
-    let out = Command::new("git")
-        .args(args)
-        .current_dir(root)
+    let mut cmd = Command::new("git");
+    cmd.args(args).current_dir(root);
+    crate::server_manager::hide_console(&mut cmd);
+    let out = cmd
         .output()
         .map_err(|e| format!("git not available: {e}"))?;
     if !out.status.success() {
@@ -66,9 +67,10 @@ fn git(args: &[&str], root: &str) -> Result<String, String> {
 }
 
 fn has_git() -> bool {
-    Command::new("git")
-        .args(["--version"])
-        .output()
+    let mut cmd = Command::new("git");
+    cmd.args(["--version"]);
+    crate::server_manager::hide_console(&mut cmd);
+    cmd.output()
         .map(|o| o.status.success())
         .unwrap_or(false)
 }

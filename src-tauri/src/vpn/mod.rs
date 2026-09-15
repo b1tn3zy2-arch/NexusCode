@@ -202,9 +202,10 @@ pub async fn start(
         );
         let probe = app_data_dir()?.join("nexuscode-vpn-check.json");
         write_secret_file(&probe, &serde_json::to_string_pretty(&cfg).unwrap())?;
-        let out = tokio::process::Command::new(&bin)
-            .args(["check", "-c"])
-            .arg(&probe)
+        let mut check = tokio::process::Command::new(&bin);
+        check.args(["check", "-c"]).arg(&probe);
+        crate::server_manager::hide_console_tokio(&mut check);
+        let out = check
             .output()
             .await
             .map_err(|e| format!("sing-box check failed to run: {e}"))?;

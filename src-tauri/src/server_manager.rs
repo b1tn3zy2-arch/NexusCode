@@ -9,6 +9,25 @@ use std::os::windows::process::CommandExt;
 #[cfg(target_os = "windows")]
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
+/// Hide the console window of a std child process on Windows.
+/// Release builds set windows_subsystem="windows" (no console of their
+/// own), so without this flag every console child (git, cmd, sing-box
+/// check…) pops a visible window on every call.
+pub(crate) fn hide_console(cmd: &mut std::process::Command) {
+    #[cfg(target_os = "windows")]
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    #[cfg(not(target_os = "windows"))]
+    let _ = cmd;
+}
+
+/// Same as [`hide_console`], for tokio child processes.
+pub(crate) fn hide_console_tokio(cmd: &mut tokio::process::Command) {
+    #[cfg(target_os = "windows")]
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    #[cfg(not(target_os = "windows"))]
+    let _ = cmd;
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct ServerInfo {
     pub port: u16,
