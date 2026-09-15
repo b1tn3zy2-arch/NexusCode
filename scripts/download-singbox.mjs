@@ -50,15 +50,17 @@ if (!force && existsSync(outPath)) {
 
 console.log(`[sing-box] fetching ${SINGBOX_VERSION} for ${triple}...`);
 
-const res = await fetch(
-  `https://api.github.com/repos/SagerNet/sing-box/releases/tags/${SINGBOX_VERSION}`,
-  { headers: { "User-Agent": "nexuscode-build" } },
-);
-if (!res.ok) {
-  console.error(`[sing-box] GitHub API failed: ${res.status}`);
+const { fetchJson, fetchBuf } = await import("./fetch-retry.mjs");
+let release;
+try {
+  release = await fetchJson(
+    `https://api.github.com/repos/SagerNet/sing-box/releases/tags/${SINGBOX_VERSION}`,
+    "sing-box release metadata",
+  );
+} catch (e) {
+  console.error(`[sing-box] GitHub API failed: ${e.message}`);
   process.exit(1);
 }
-const release = await res.json();
 
 // Desktop archives look like:
 //   sing-box-1.14.0-windows-amd64.zip
@@ -96,17 +98,17 @@ if (!asset) {
 }
 
 console.log(`[sing-box] downloading ${asset.name} (${Math.round(asset.size / 1e6)} MB)...`);
-const binRes = await fetch(asset.browser_download_url, {
-  headers: { "User-Agent": "nexuscode-build" },
-});
-if (!binRes.ok) {
-  console.error(`[sing-box] download failed: ${binRes.status}`);
+let assetBuf;
+try {
+  assetBuf = await fetchBuf(asset.browser_download_url, `sing-box asset ${asset.name}`);
+} catch (e) {
+  console.error(`[sing-box] download failed: ${e.message}`);
   process.exit(1);
 }
 const tmpRoot = path.join(root, "node_modules", ".singbox-tmp");
 mkdirSync(tmpRoot, { recursive: true });
 const archivePath = path.join(tmpRoot, asset.name);
-await writeFile(archivePath, Buffer.from(await binRes.arrayBuffer()));
+await writeFile(archivePath, assetBuf);
 
 mkdirSync(outDir, { recursive: true });
 

@@ -53,14 +53,14 @@ const releaseUrl = OPENCODE_PIN
   : "https://api.github.com/repos/anomalyco/opencode/releases/latest";
 console.log(`[sidecar] fetching ${OPENCODE_PIN ? `pinned OpenCode ${OPENCODE_PIN}` : "latest OpenCode release"} for ${triple}...`);
 
-const res = await fetch(releaseUrl, {
-  headers: { "User-Agent": "nexuscode-build" },
-});
-if (!res.ok) {
-  console.error(`[sidecar] GitHub API failed: ${res.status} (${releaseUrl})`);
+const { fetchJson } = await import("./fetch-retry.mjs");
+let release;
+try {
+  release = await fetchJson(releaseUrl, "opencode release metadata");
+} catch (e) {
+  console.error(`[sidecar] GitHub API failed: ${e.message} (${releaseUrl})`);
   process.exit(1);
 }
-const release = await res.json();
 if (OPENCODE_PIN && release.tag_name !== OPENCODE_PIN) {
   console.error(`[sidecar] tag mismatch: wanted ${OPENCODE_PIN}, got ${release.tag_name}`);
   process.exit(1);
@@ -87,17 +87,18 @@ if (!asset) {
 }
 
 console.log(`[sidecar] downloading ${asset.name} (${Math.round(asset.size / 1e6)} MB)...`);
-const binRes = await fetch(asset.browser_download_url, {
-  headers: { "User-Agent": "nexuscode-build" },
-});
-if (!binRes.ok) {
-  console.error(`[sidecar] download failed: ${binRes.status}`);
+const { fetchBuf } = await import("./fetch-retry.mjs");
+let assetBuf;
+try {
+  assetBuf = await fetchBuf(asset.browser_download_url, `opencode asset ${asset.name}`);
+} catch (e) {
+  console.error(`[sidecar] download failed: ${e.message}`);
   process.exit(1);
 }
 const tmpRoot = path.join(root, "node_modules", ".sidecar-tmp");
 mkdirSync(tmpRoot, { recursive: true });
 const archivePath = path.join(tmpRoot, asset.name);
-await writeFile(archivePath, Buffer.from(await binRes.arrayBuffer()));
+await writeFile(archivePath, assetBuf);
 
 mkdirSync(outDir, { recursive: true });
 

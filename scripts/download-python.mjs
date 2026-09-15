@@ -48,15 +48,17 @@ if (cached()) {
   console.log(`[python] cached: ${outDir} (${PY_VERSION})`);
 } else {
 console.log(`[python] downloading embeddable Python ${PY_VERSION}...`);
-const res = await fetch(url, { headers: { "User-Agent": "nexuscode-build" } });
-if (!res.ok) {
-  console.error(`[python] download failed: HTTP ${res.status}`);
+let zipBuf;
+try {
+  zipBuf = await fetchBuf(url, "python embed zip");
+} catch (e) {
+  console.error(`[python] download failed: ${e.message}`);
   process.exit(1);
 }
 const tmpRoot = path.join(root, "node_modules", ".py-tmp");
 mkdirSync(tmpRoot, { recursive: true });
 const zipPath = path.join(tmpRoot, `python-embed-${PY_VERSION}.zip`);
-writeFileSync(zipPath, Buffer.from(await res.arrayBuffer()));
+writeFileSync(zipPath, zipBuf);
 
 rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
@@ -75,11 +77,7 @@ console.log(`[python] placed: ${outDir}`);
 const wheelsDir = path.join(root, "src-tauri", "binaries", "python-wheels");
 const wheelsMarker = path.join(wheelsDir, ".version");
 const DEBUGPY_PIN = process.env.NEXUS_DEBUGPY ?? PINS.debugpy ?? null; // e.g. 1.8.21, else latest
-async function fetchBuf(url, what) {
-  const r = await fetch(url, { headers: { "User-Agent": "nexuscode-build" } });
-  if (!r.ok) throw new Error(`${what}: HTTP ${r.status}`);
-  return Buffer.from(await r.arrayBuffer());
-}
+const { fetchJson, fetchBuf } = await import("./fetch-retry.mjs");
 try {
   const archTag = platformKey === "win32_arm64" ? "arm64" : "amd64";
   // Always present (possibly empty) so the tauri resources glob resolves.
@@ -93,9 +91,7 @@ try {
       await fetchBuf("https://bootstrap.pypa.io/get-pip.py", "get-pip"),
     );
     console.log("[python] resolving debugpy wheel...");
-    const meta = await (await fetch("https://pypi.org/pypi/debugpy/json", {
-      headers: { "User-Agent": "nexuscode-build" },
-    })).json();
+    const meta = await fetchJson("https://pypi.org/pypi/debugpy/json", "debugpy metadata");
     const version = DEBUGPY_PIN ?? meta?.info?.version;
     if (!version) throw new Error("no debugpy version");
     const files = (meta.urls ?? []).filter(
