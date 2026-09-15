@@ -1,0 +1,10 @@
+# Normalize line endings to LF in the repo (Windows checkouts convert back).
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.ico binary
+*.png binary
+*.icns binary
+*.bmp binary
+*.dll binary
+*.exe binary
+*.pyd binary

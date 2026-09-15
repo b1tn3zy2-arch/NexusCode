@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NexusCode</title>
+    <style>
+      /* Instant splash: painted before any JS loads, removed by React. */
+      html, body { margin: 0; height: 100%; background: #0a0a0f; }
+      #nc-splash {
+        position: fixed; inset: 0; z-index: 99998;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 18px; background: #0a0a0f; color: #a0a0b0;
+        font: 500 13px system-ui, sans-serif;
+      }
+      #nc-splash .nc-logo {
+        width: 56px; height: 56px; border-radius: 16px;
+        background: linear-gradient(135deg, #4f46e5, #8b5cf6);
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font: 800 28px system-ui, sans-serif;
+        box-shadow: 0 0 44px #6366f155;
+      }
+      #nc-splash .nc-bar { width: 168px; height: 3px; border-radius: 2px; background: #1e1e2e; overflow: hidden; }
+      #nc-splash .nc-bar > div {
+        height: 100%; width: 40%; border-radius: 2px; background: #6366f1;
+        animation: nc-splash-slide 1.1s ease-in-out infinite;
+      }
+      @keyframes nc-splash-slide {
+        0% { transform: translateX(-110%); }
+        100% { transform: translateX(430%); }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <div id="nc-splash" aria-hidden="true">
+      <div class="nc-logo">N</div>
+      <div class="nc-bar"><div></div></div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

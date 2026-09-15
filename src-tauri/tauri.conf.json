@@ -1,0 +1,70 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "NexusCode",
+  "version": "1.0.0",
+  "identifier": "ai.nexuscode.app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "node scripts/download-opencode.mjs && node scripts/download-python.mjs && npm run build:secure",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "NexusCode",
+        "width": 1500,
+        "height": 940,
+        "minWidth": 960,
+        "minHeight": 600,
+        "theme": null,
+        "decorations": false,
+        "transparent": true,
+        "center": true,
+        "resizable": true,
+        "shadow": false
+        }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' blob: http://localhost:1420; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; img-src 'self' data: blob: https: asset:; font-src 'self' data: asset:; connect-src 'self' ipc: http://ipc.localhost https://ipc.localhost asset: http://localhost:* ws://localhost:*; media-src 'self' blob: data: asset:"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "resources": {
+      "dlls/WebView2Loader.dll": "./",
+      "binaries/python/*": "python/",
+      "binaries/python-wheels/*": "python-wheels/"
+    },
+    "externalBin": [
+      "binaries/opencode",
+      "binaries/sing-box"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": [
+          "English",
+          "Russian"
+        ],
+        "displayLanguageSelector": true,
+        "template": "./installer.nsi",
+        "installerIcon": "./icons/icon.ico",
+        "headerImage": "./installer-assets/header.bmp",
+        "sidebarImage": "./installer-assets/sidebar.bmp",
+        "uninstallerHeaderImage": "./installer-assets/header.bmp",
+        "compression": "lzma",
+        "startMenuFolder": "NexusCode"
+      }
+    }
+  }
+}

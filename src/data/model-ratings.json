@@ -1,0 +1,29 @@
+{
+  "_comment": "Curated coding-effectiveness estimates (editorial scores 0-100 + tiers). Scores are hand-maintained approximations, NOT live benchmark scrapes — live pricing/context syncs separately via OpenCode/OpenRouter. Refresh cadence: manual + weekly auto.",
+  "version": 1,
+  "updatedAt": "2026-09-08",
+  "ratings": {
+    "opencode/muse-spark-1.3-contributor-free": { "score": 88, "tier": "A", "note": "Strong free coding tier" },
+    "opencode/muse-spark-1.2-contributor-free": { "score": 85, "tier": "A", "note": "Solid free coding" },
+    "opencode/hy3-free": { "score": 78, "tier": "B", "note": "Hybrid reasoning" },
+    "opencode/x-preview-f-free": { "score": 75, "tier": "B", "note": "Experimental preview" },
+    "opencode/deepseek-v4-flash-free": { "score": 80, "tier": "B", "note": "Fast responses" },
+    "opencode/kimi-k2-free": { "score": 83, "tier": "A", "note": "Long context" },
+    "opencode/qwen3-coder-free": { "score": 84, "tier": "A", "note": "Code specialist" },
+    "opencode/llama-3.3-70b-free": { "score": 72, "tier": "C", "note": "Meta open weights" },
+    "openai/gpt-5": { "score": 96, "tier": "S", "note": "Top frontier coder" },
+    "openai/gpt-5-mini": { "score": 88, "tier": "A", "note": "Fast and cheap" },
+    "openai/gpt-4.1": { "score": 87, "tier": "A", "note": "Balanced" },
+    "anthropic/claude-sonnet-4": { "score": 93, "tier": "S", "note": "Best for coding" },
+    "anthropic/claude-opus-4": { "score": 97, "tier": "S", "note": "Most powerful" },
+    "anthropic/claude-haiku-4": { "score": 82, "tier": "B", "note": "Fastest" },
+    "google/gemini-2.5-pro": { "score": 91, "tier": "S", "note": "Huge context" },
+    "google/gemini-2.5-flash": { "score": 84, "tier": "A", "note": "Flash fast" },
+    "ollama/qwen3:latest": { "score": 70, "tier": "C", "note": "Local, private" },
+    "ollama/llama3.1:latest": { "score": 65, "tier": "C", "note": "Local, private" },
+    "opencode/big-pickle": { "score": 78, "tier": "B", "note": "Newcomer", "matchNames": ["big pickle"] },
+    "opencode/ling-3.0-flash": { "score": 80, "tier": "B", "note": "Fast flashing", "matchNames": ["ling 3.0 flash", "ling 3.0 flash fin"] },
+    "opencode/mimo-v2.5-free": { "score": 82, "tier": "B", "note": "Xiaomi coder", "matchNames": ["mimo v2.5", "mimo"] },
+    "opencode/nemotron-3-ultra-free": { "score": 84, "tier": "A", "note": "Strong free coder", "matchNames": ["nemotron 3 ultra", "nemotron"] }
+  }
+}

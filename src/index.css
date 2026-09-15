@@ -1,0 +1,909 @@
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/jetbrains-mono";
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.theme-dark, .theme-oled));
+
+/* ============================================================
+   NexusCode design tokens
+   ============================================================ */
+
+.theme-dark {
+  /* base */
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #0f0f14;
+  --bg-tertiary: #13131a;
+  --bg-quaternary: #1a1a23;
+  --hover: rgba(255, 255, 255, 0.04);
+  --active: rgba(255, 255, 255, 0.06);
+
+  /* text */
+  --text-primary: #f0f0f5;
+  --text-secondary: #a0a0b0;
+  --text-tertiary: #606070;
+
+  /* border */
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+
+  /* semantic */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+
+  /* ai */
+  --ai-glow: rgba(99, 102, 241, 0.3);
+  --ai-subtle: rgba(99, 102, 241, 0.1);
+  --ai-border: rgba(99, 102, 241, 0.2);
+}
+
+.theme-oled {
+  --bg-primary: #000000;
+  --bg-secondary: #050505;
+  --bg-tertiary: #0a0a0a;
+  --bg-quaternary: #0f0f0f;
+  --hover: rgba(255, 255, 255, 0.03);
+  --active: rgba(255, 255, 255, 0.05);
+
+  --text-primary: #f0f0f5;
+  --text-secondary: #a0a0b0;
+  --text-tertiary: #606070;
+
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-default: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+
+  --ai-glow: rgba(99, 102, 241, 0.35);
+  --ai-subtle: rgba(99, 102, 241, 0.12);
+  --ai-border: rgba(99, 102, 241, 0.25);
+}
+
+.theme-light {
+  --bg-primary: #fafafa;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f5f5f5;
+  --bg-quaternary: #eeeeee;
+  --hover: rgba(0, 0, 0, 0.03);
+  --active: rgba(0, 0, 0, 0.05);
+
+  --text-primary: #18181b;
+  --text-secondary: #52525b;
+  --text-tertiary: #a1a1aa;
+
+  --border-subtle: rgba(0, 0, 0, 0.04);
+  --border-default: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.12);
+
+  --success: #16a34a;
+  --warning: #d97706;
+  --error: #dc2626;
+  --info: #2563eb;
+
+  --ai-glow: rgba(99, 102, 241, 0.25);
+  --ai-subtle: rgba(99, 102, 241, 0.08);
+  --ai-border: rgba(99, 102, 241, 0.2);
+}
+
+/* accent scale — shared across themes */
+:root,
+.theme-dark,
+.theme-light,
+.theme-oled {
+  --accent-50: #eef2ff;
+  --accent-100: #e0e7ff;
+  --accent-200: #c7d2fe;
+  --accent-300: #a5b4fc;
+  --accent-400: #818cf8;
+  --accent-500: #6366f1;
+  --accent-600: #4f46e5;
+  --accent-700: #4338ca;
+  --accent-800: #3730a3;
+  --accent-900: #312e81;
+
+  --font-ui: "Geist Variable", "Geist", Inter, system-ui, sans-serif, "Segoe UI Emoji", "Noto Color Emoji";
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", Consolas,
+    monospace, "Segoe UI Emoji", "Noto Color Emoji";
+
+  /* ---- legacy aliases (existing components) ---- */
+  --accent: var(--accent-500);
+  --bg-hover: var(--hover);
+}
+
+.theme-dark {
+  --bg-primary-legacy: #161618;
+}
+/* legacy aliases resolved per theme */
+.theme-dark,
+.theme-oled {
+  --border-color: var(--border-default);
+  --inline-code-bg: rgba(255, 255, 255, 0.06);
+}
+.theme-light {
+  --border-color: var(--border-default);
+  --inline-code-bg: rgba(0, 0, 0, 0.05);
+}
+.theme-dark {
+  --legacy-bg-secondary: #1e1e20;
+  --legacy-bg-tertiary: #26262a;
+  --legacy-text-primary: #e8e8e8;
+  --legacy-text-secondary: #8b8b90;
+}
+.theme-light {
+  --legacy-bg-secondary: #f6f6f6;
+  --legacy-bg-tertiary: #ececec;
+  --legacy-text-primary: #1a1a1a;
+  --legacy-text-secondary: #6b6b6b;
+}
+
+/* map legacy names used across current components */
+.theme-dark,
+.theme-oled,
+.theme-light {
+  --bg-primary-l: var(--bg-primary);
+}
+
+/* ============================================================
+   Base — rounded window (transparent + DWM)
+   ============================================================ */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+html, body {
+  background: transparent !important;
+}
+
+body {
+  background-color: transparent !important;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  user-select: none;
+}
+
+/* allow text selection inside chat, editor and inputs — fixes "can't copy" */
+.markdown-body,
+.agent-msg-base,
+.agent-thought .thought-body,
+.chat-message,
+.user-msg,
+.code-block,
+.code-fallback,
+.inline-code,
+.select-content,
+.select-item,
+input,
+textarea,
+[contenteditable="true"] {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+code,
+pre,
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* ============================================================
+   Buttons / inputs
+   ============================================================ */
+
+.btn-primary {
+  border-radius: 8px;
+  padding: 0.32rem 0.95rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  box-shadow: 0 0 20px var(--ai-glow);
+  transition:
+    transform 120ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 200ms;
+}
+.btn-primary:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 0 28px var(--ai-glow);
+}
+.btn-primary:active {
+  transform: scale(0.97);
+}
+.btn-primary:disabled {
+  opacity: 0.45;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  padding: 0.32rem 0.85rem;
+  font-size: 0.8rem;
+  transition: background 150ms, transform 120ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-secondary:hover {
+  background: var(--hover);
+}
+.btn-secondary:active {
+  transform: scale(0.96);
+}
+/* ghost buttons are styled inline via Tailwind — press effect only */
+.btn-ghost {
+  transition: transform 120ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms, color 150ms;
+}
+.btn-ghost:active {
+  transform: scale(0.94);
+}
+.btn-secondary:disabled {
+  opacity: 0.45;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+/* ============================================================
+   Scrollbars
+   ============================================================ */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-gutter: auto;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+/* Overlay-style pill: thumb invisible until hover/scroll, theme tokens only.
+   NOTE: no transparent-border + background-clip trick — it renders square
+   corners at some DPIs. border-radius:999px on the bare thumb is a true pill. */
+*::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+}
+*:hover::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:active {
+  background: color-mix(in srgb, var(--text-tertiary) 60%, transparent);
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Monaco draws its own scrollbar/minimap sliders as divs — pill them too
+   (theme colors come from nexus-dark; here only the geometry). */
+.monaco-editor .slider,
+.monaco-editor .minimap-slider,
+.monaco-editor .minimap-slider-horizontal {
+  border-radius: 999px !important;
+}
+
+/* ============================================================
+   Markdown content
+   ============================================================ */
+
+.markdown-body {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  overflow-wrap: break-word;
+}
+.markdown-body > *:first-child {
+  margin-top: 0.25rem;
+}
+.markdown-body > *:last-child {
+  margin-bottom: 0.25rem;
+}
+.markdown-body p {
+  margin: 0.45rem 0;
+}
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  margin: 0.9rem 0 0.4rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.markdown-body h1 {
+  font-size: 1.25rem;
+}
+.markdown-body h2 {
+  font-size: 1.12rem;
+}
+.markdown-body h3 {
+  font-size: 1rem;
+}
+.markdown-body ul,
+.markdown-body ol {
+  margin: 0.45rem 0;
+  padding-left: 1.4rem;
+}
+.markdown-body li {
+  margin: 0.18rem 0;
+}
+.markdown-body blockquote {
+  margin: 0.5rem 0;
+  padding: 0.15rem 0.9rem;
+  border-left: 3px solid var(--border-strong);
+  color: var(--text-secondary);
+}
+.markdown-body table {
+  border-collapse: collapse;
+  margin: 0.6rem 0;
+  font-size: 0.82rem;
+  display: block;
+  overflow-x: auto;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--border-color);
+  padding: 0.28rem 0.65rem;
+}
+.markdown-body th {
+  background: var(--bg-tertiary);
+}
+.markdown-body hr {
+  border: none;
+  border-top: 1px solid var(--border-default);
+  margin: 0.8rem 0;
+}
+.inline-code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+
+/* ============================================================
+   Code blocks (shiki)
+   ============================================================ */
+
+.code-block pre,
+.code-fallback {
+  margin: 0.5rem 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.code-block pre code,
+.code-fallback code {
+  font-family: var(--font-mono);
+  background: transparent;
+  padding: 0;
+}
+.code-fallback {
+  background: var(--bg-tertiary);
+}
+
+/* ============================================================
+   Typography scale (P-polish): readable minimums
+   ============================================================ */
+
+.text-ui-xs { font-size: 12px; line-height: 16px; }
+.text-ui-sm { font-size: 13px; line-height: 18px; }
+.text-ui-base { font-size: 14px; line-height: 21px; }
+.text-ui-md { font-size: 15px; line-height: 22px; }
+
+/* section headers inside panels */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.section-header svg { color: var(--accent-400); }
+
+/* section card container */
+.section-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  transition: border-color 150ms ease;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.section-card:hover { border-color: var(--border-default); }
+@media (max-width: 1100px) {
+  .section-card { padding: 10px 12px; }
+}
+
+/* inputs — larger, focus ring */
+.input-field,
+textarea.input-field {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  font-family: inherit;
+}
+.input-field::placeholder { color: var(--text-tertiary); font-size: 13px; }
+.input-field:focus {
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* hide native number spin buttons everywhere (unified look) */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* bigger primary/secondary buttons */
+.btn-primary {
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.btn-secondary {
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* custom toggle switch */
+.toggle-switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+.toggle-switch input { position: absolute; opacity: 0; pointer-events: none; }
+.toggle-slider {
+  position: relative; flex-shrink: 0;
+  width: 36px; height: 20px; border-radius: 999px;
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-default);
+  transition: background 200ms cubic-bezier(0.4, 0, 0.2, 1), border-color 200ms;
+}
+.toggle-knob {
+  position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px; border-radius: 999px;
+  background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--accent-500); border-color: var(--accent-500); }
+.toggle-switch input:checked + .toggle-slider .toggle-knob { transform: translateX(16px); }
+.toggle-label { font-size: 14px; color: var(--text-secondary); }
+
+/* custom checkbox */
+.checkbox-row { display: inline-flex; align-items: center; gap: 8px; padding: 3px 0; line-height: 1.45; font-size: 14px; color: var(--text-secondary); cursor: pointer; user-select: none; }
+.checkbox-row input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none;
+  width: 16px; height: 16px; flex-shrink: 0;
+  margin: 0;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 5px;
+  background: var(--bg-quaternary);
+  transition: background 150ms, border-color 150ms;
+  cursor: pointer;
+  position: relative;
+}
+.checkbox-row input[type="checkbox"]:checked {
+  background: var(--accent-500);
+  border-color: var(--accent-500);
+}
+.checkbox-row input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute; left: 5px; top: 2px;
+  width: 4px; height: 8px;
+  border: solid #fff; border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.checkbox-row input[type="checkbox"]:hover:not(:checked) { border-color: var(--accent-400); }
+
+/* segmented control */
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--bg-quaternary);
+  border-radius: 10px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.segmented button {
+  font-size: 13px; font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  transition: background 150ms, color 150ms;
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1 1 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.segmented button:hover { color: var(--text-primary); }
+.segmented button.active { background: var(--accent-500); color: #fff; }
+
+/* custom select (replaces native <select>) */
+.select-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.select-trigger:hover { border-color: var(--border-strong); }
+.select-trigger:focus-visible {
+  outline: none;
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+.select-content {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  padding: 4px;
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  animation: select-pop 150ms ease;
+}
+@keyframes select-pop {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.select-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-secondary);
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.select-item:hover { background: var(--hover); color: var(--text-primary); }
+.select-item.active { background: var(--ai-subtle); color: var(--accent-400); }
+/* Row variant: unlayered CSS beats Tailwind layered `flex`, so a plain
+   `display:block` here would stack chips under the text. Dedicated class. */
+.select-item-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+}
+
+/* ============================================================
+   Agent message styles (thought / tool / file / answer)
+   ============================================================ */
+
+.agent-msg-base {
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin: 6px 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* Thought (reasoning) */
+.agent-thought {
+  background: rgba(139, 92, 246, 0.06);
+  border-left: 2px solid #8b5cf6;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+.theme-light .agent-thought { background: rgba(139, 92, 246, 0.07); }
+.agent-thought summary {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: #a78bfa;
+  cursor: pointer; list-style: none; user-select: none;
+}
+.agent-thought summary::-webkit-details-marker { display: none; }
+.agent-thought .thought-body {
+  margin-top: 8px;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+/* Tool call */
+.agent-tool {
+  background: rgba(96, 165, 250, 0.05);
+  border-left: 2px solid #3b82f6;
+}
+.theme-light .agent-tool { background: rgba(96, 165, 250, 0.08); }
+.agent-tool .tool-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; color: #60a5fa;
+}
+.agent-tool code, .agent-tool .tool-code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+/* File part */
+.agent-file {
+  background: rgba(74, 222, 128, 0.05);
+  border-left: 2px solid #22c55e;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13.5px;
+}
+.theme-light .agent-file { background: rgba(74, 222, 128, 0.09); }
+
+/* Final answer wrapper */
+.agent-answer {
+  background: color-mix(in srgb, var(--text-primary) 3%, transparent);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.markdown-body { font-size: 15px; line-height: 1.6; }
+
+/* status badges */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  border-radius: 6px;
+  padding: 1px 7px;
+  font-size: 11px; font-weight: 600;
+  background: var(--bg-quaternary);
+  color: var(--text-secondary);
+}
+
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary);
+  transition: background 150ms, color 150ms, transform 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.icon-btn:hover { background: var(--hover); color: var(--text-primary); }
+.icon-btn:active { transform: scale(0.88); }
+
+/* ============================================================
+   Pressable rows/cards + invented micro-animations
+   ============================================================ */
+
+/* Any clickable row/card: tactile press without layout shift. */
+.pressable {
+  transition: transform 110ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms, border-color 150ms;
+}
+.pressable:active {
+  transform: scale(0.975);
+}
+
+/* Pop-in for dialogs/palettes (mount animation, transform+opacity only). */
+@keyframes nc-pop-in {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.anim-pop-in {
+  animation: nc-pop-in 160ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+/* Breathing glow for the active VPN power button. */
+@keyframes nc-glow-pulse {
+  0%, 100% { box-shadow: 0 0 18px #22c55e33; }
+  50% { box-shadow: 0 0 34px #22c55e66; }
+}
+.anim-glow-pulse {
+  animation: nc-glow-pulse 2.4s ease-in-out infinite;
+}
+
+/* Status dot ping for transitional states (uses transform+opacity). */
+@keyframes nc-dot-ping {
+  0% { box-shadow: 0 0 0 0 currentColor; opacity: 0.9; }
+  70% { box-shadow: 0 0 0 6px transparent; opacity: 0.4; }
+  100% { box-shadow: 0 0 0 0 transparent; opacity: 0.9; }
+}
+.anim-dot-ping {
+  animation: nc-dot-ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not(.anim-force) *, html:not(.anim-force) *::before, html:not(.anim-force) *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+/* In-app master switch OFF: kill animations regardless of the OS. */
+html.anim-off *, html.anim-off *::before, html.anim-off *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* ============================================================
+   Git gutter decorations (Phase B)
+   ============================================================ */
+.git-gutter-added {
+  background: #73c991;
+  width: 3px !important;
+  margin-left: 3px;
+}
+.git-gutter-modified {
+  background: #e2b340;
+  width: 3px !important;
+  margin-left: 3px;
+}
+.git-gutter-removed {
+  background: #f14c4c;
+  width: 0 !important;
+  height: 0 !important;
+  border-left: 6px solid #f14c4c;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  margin-left: 2px;
+}
+.git-gutter-hover {
+  position: fixed;
+  z-index: 80;
+  max-width: 360px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  white-space: pre-wrap;
+}
+.git-gutter-hover .ggh-title {
+  color: var(--text-tertiary);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ============================================================
+   Debug breakpoints (glyph margin dots, VS Code style)
+   ============================================================ */
+.debug-bp,
+.debug-bp-disabled,
+.debug-bp-conditional {
+  width: 12px !important;
+  height: 12px !important;
+  margin: 4px 0 0 5px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.debug-bp {
+  background: #f14c4c;
+  box-shadow: 0 0 6px rgba(241, 76, 76, 0.6);
+}
+.debug-bp-disabled {
+  background: transparent;
+  border: 2px solid #6b7280;
+  width: 8px !important;
+  height: 8px !important;
+  margin: 6px 0 0 7px;
+}
+.debug-bp-conditional {
+  background: #f14c4c;
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(241, 76, 76, 0.6);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Press feedback for EVERY button: quick scale-down on press (transform
+   only — GPU-friendly, no layout thrash), springy release. Tailwind v4
+   scale/translate utilities use separate CSS properties, so this composes
+   with them instead of overriding. */
+button:not(:disabled) {
+  transition: transform 120ms ease-out, background-color 150ms ease, opacity 150ms ease;
+}
+button:not(:disabled):active {
+  transform: scale(0.93);
+  transition-duration: 60ms;
+}
+/* Icon buttons get a touch more life */
+.icon-btn:not(:disabled):active {
+  transform: scale(0.85) rotate(-4deg);
+}
+
+/* AI live-edit flash: fading highlight on lines the agent just wrote */
+.ai-stream-line {
+  background: color-mix(in srgb, var(--accent-500) 22%, transparent);
+  animation: aiFlash 2.4s ease-out forwards;
+}
+@keyframes aiFlash {
+  0% { background: color-mix(in srgb, var(--accent-500) 38%, transparent); }
+  100% { background: transparent; }
+}
+
+/* Cursor-style review: green added lines, red deletion markers */
+.ai-review-added {
+  background: rgba(34, 197, 94, 0.13);
+}
+.ai-review-added-gutter {
+  background: #22c55e;
+  width: 3px !important;
+}
+.ai-review-removed-gutter {
+  background: repeating-linear-gradient(
+    to bottom,
+    #f87171 0 3px,
+    transparent 3px 6px
+  );
+  width: 3px !important;
+}
