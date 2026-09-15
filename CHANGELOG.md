@@ -19,6 +19,9 @@ versions follow [Semantic Versioning](https://semver.org/).
   for re-import instead of failing cryptically
 - `scripts/versions.json`: single source of truth for sidecar pins
   (opencode / sing-box / python / debugpy)
+- Resilient sidecar downloads: shared retry-with-backoff helper
+  (`scripts/fetch-retry.mjs`) wired into all three download scripts
+- Release pipeline: Windows CI + NSIS draft-release workflow on `v*` tags
 
 ### Fixed
 - `security=reality` VLESS links built a plaintext outbound (no TLS section)
@@ -31,6 +34,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 - VPN status lying during opencode restart (`reconnecting` state)
 - Checkbox spacing in Loop/Continuous options
 - `cargo test --lib` on Windows GNU (manifest stamp wrapper)
+- Review autopilot: auto-accept setting, auto decorations, floating accept/revert bar
+- TDZ crash in `download-python.mjs` on fresh (uncached) downloads
 
 ### Security
 - 64 MB caps on file read/write payloads

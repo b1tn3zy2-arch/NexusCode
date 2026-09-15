@@ -7,6 +7,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { execSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { fetchJson, fetchBuf } from "./fetch-retry.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = path.join(root, "src-tauri", "binaries", "python");
@@ -77,7 +78,6 @@ console.log(`[python] placed: ${outDir}`);
 const wheelsDir = path.join(root, "src-tauri", "binaries", "python-wheels");
 const wheelsMarker = path.join(wheelsDir, ".version");
 const DEBUGPY_PIN = process.env.NEXUS_DEBUGPY ?? PINS.debugpy ?? null; // e.g. 1.8.21, else latest
-const { fetchJson, fetchBuf } = await import("./fetch-retry.mjs");
 try {
   const archTag = platformKey === "win32_arm64" ? "arm64" : "amd64";
   // Always present (possibly empty) so the tauri resources glob resolves.

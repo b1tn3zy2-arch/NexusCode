@@ -1,0 +1,40 @@
+name: Release
+
+# Manual release: tag a commit `git tag v1.0.0 && git push origin v1.0.0`
+# and this builds the Windows NSIS installer + sidecars into a draft
+# GitHub Release. Review the draft, attach notes, then publish.
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      - run: npm ci
+      # Sidecars are pinned in scripts/versions.json; downloads retry.
+      - run: node scripts/download-opencode.mjs
+      - run: node scripts/download-singbox.mjs
+      - run: node scripts/download-python.mjs
+      # NOTE: check-installer-template.mjs intentionally runs only locally —
+      # makensis appears on the runner inside tauri-action itself.
+      - uses: tauri-apps/tauri-action@v0
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "NexusCode ${{ github.ref_name }}"
+          releaseBody: "See CHANGELOG.md. Windows installer below (manual updates: download and run)."
+          releaseDraft: true
+          prerelease: false
+          args: --bundles nsis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
