@@ -11,6 +11,12 @@ on:
 jobs:
   release-windows:
     runs-on: windows-latest
+    # tauri-action must create the draft release + upload assets.
+    # Without this, restrictive repo token settings fail the run with
+    # "Resource not accessible by integration" at the very last step —
+    # after a full 8-minute build.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
