@@ -110,7 +110,10 @@ pub fn resolve_singbox() -> Result<String, String> {
             })
             .map(|p| p.to_string_lossy().into_owned())
             .collect();
-        cands.sort();
+        // Prefer MSVC builds on Windows: fully self-contained, no MinGW
+        // runtime quirks (a gnu build once died with 0xC0000142 when
+        // spawned from the GUI app while working fine from a console).
+        cands.sort_by_key(|p| (!cfg!(windows) || !p.contains("msvc")) as u8);
         if let Some(p) = cands.into_iter().next() {
             return Ok(p);
         }
