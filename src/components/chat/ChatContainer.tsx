@@ -174,8 +174,8 @@ function ReviewBanner({ sessionId }: { sessionId: string }) {
     if (!workDir || busy) return;
     setBusy(true);
     try {
-      const { checkpointsApi } = await import("../../lib/checkpoints");
-      await checkpointsApi.restore(workDir, review.checkpointId);
+      const { revertRun } = await import("../../lib/checkpoints");
+      await revertRun(workDir, review.checkpointId);
       logInfo("review", `reverted to ${review.checkpointId}`);
       toast.success(t("review.reverted", "Изменения возвращены"));
       dismissReview(sessionId);

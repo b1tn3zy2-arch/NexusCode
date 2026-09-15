@@ -57,6 +57,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { ContextMenuHost } from "./components/ContextMenuHost";
 import { useContextMenuStore } from "./stores/contextMenuStore";
 import { useAppMenu } from "./components/menus";
+import { AutoReview } from "./components/editor/AutoReview";
 
 interface OcPermissionPayload {
   kind: "request" | "resolved" | "replied";
@@ -559,6 +560,7 @@ export default function App() {
         <DiffModal />
         <AiReviewModal />
       </Suspense>
+      <AutoReview />
       <Suspense fallback={null}>
         <CommandPalette />
         <QuickOpen />

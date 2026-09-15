@@ -179,6 +179,10 @@ export const ru: Dict = {
     cancel: "Отмена",
     detect: "Найти",
     browse: "Обзор…",
+    autoAcceptReview: "Автопринятие изменений агента",
+    autoAcceptReviewHint: "Без подтверждения в баннере — изменения применяются сразу",
+    reviewDecorations: "Подсветка правок агента в редакторе",
+    reviewDecorationsHint: "Зелёные/красные метки на изменённых строках",
   },
   terminal: {
     title: "OpenCode TUI — встроенный терминал",

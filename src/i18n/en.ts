@@ -178,6 +178,10 @@ export const en = {
     cancel: "Cancel",
     detect: "Detect",
     browse: "Browse…",
+    autoAcceptReview: "Auto-accept agent changes",
+    autoAcceptReviewHint: "Skip the review confirmation — file changes apply immediately",
+    reviewDecorations: "Highlight agent edits in the editor",
+    reviewDecorationsHint: "Green/red gutter marks on AI-touched lines",
   },
   terminal: {
     title: "OpenCode TUI — embedded terminal",

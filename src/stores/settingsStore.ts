@@ -62,6 +62,13 @@ interface SettingsState {
   defaultProfileId: string;
   /** OS notification when an agent run goes idle (loop/continuous/chat). */
   notifyOnDone: boolean;
+  /**
+   * Auto-accept agent file changes: skip the ReviewBanner confirmation and
+   * dismiss pending reviews silently (with a toast). Default OFF.
+   */
+  autoAcceptReview: boolean;
+  /** Cursor-style green/red review highlight on AI-touched lines. Default ON. */
+  reviewDecorations: boolean;
   /** Monaco minimap (second render layer — off saves GPU on weak machines). */
   minimap: boolean;
   /** In-app UI animations. ON overrides the OS reduced-motion setting. */
@@ -82,6 +89,8 @@ interface SettingsState {
   setTerminalProfiles: (p: TermProfile[]) => void;
   setDefaultProfileId: (id: string) => void;
   setNotifyOnDone: (v: boolean) => void;
+  setAutoAcceptReview: (v: boolean) => void;
+  setReviewDecorations: (v: boolean) => void;
   setMinimap: (v: boolean) => void;
   setAnimations: (v: boolean) => void;
 }
@@ -105,6 +114,8 @@ export const useSettingsStore = create<SettingsState>()(
       terminalProfiles: defaultTerminalProfiles(),
       defaultProfileId: "nexuscode",
       notifyOnDone: true,
+      autoAcceptReview: false,
+      reviewDecorations: true,
       minimap: true,
       animations: true,
       setTheme: (theme) => set({ theme }),
@@ -155,6 +166,8 @@ export const useSettingsStore = create<SettingsState>()(
       },
       setDefaultProfileId: (defaultProfileId) => set({ defaultProfileId }),
       setNotifyOnDone: (notifyOnDone) => set({ notifyOnDone }),
+      setAutoAcceptReview: (autoAcceptReview) => set({ autoAcceptReview }),
+      setReviewDecorations: (reviewDecorations) => set({ reviewDecorations }),
       setMinimap: (minimap) => set({ minimap }),
       setAnimations: (animations) => set({ animations }),
     }),

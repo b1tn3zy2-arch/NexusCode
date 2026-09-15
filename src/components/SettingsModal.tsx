@@ -140,7 +140,7 @@ export function SettingsModal({
   // VS Code-like sections: sidebar nav + search filter (User scope only).
   const SECTIONS = [
     { id: "common", title: t("settings.secCommon", "Общие"), keys: "общие general binary workdir папка порт port тема theme язык language режим mode анимации animations" },
-    { id: "chat", title: t("settings.secChat", "Чат"), keys: "чат chat русский russian" },
+    { id: "chat", title: t("settings.secChat", "Чат"), keys: "чат chat русский russian ревью review автопринятие подсветка" },
     { id: "editor", title: t("settings.secEditor", "Редактор"), keys: "редактор editor шрифт font стрим stream скорость" },
     { id: "terminal", title: t("settings.secTerminal", "Терминал"), keys: "терминал terminal шелл shell профиль profile powershell cmd python repl" },
     { id: "agents", title: t("settings.secAgents", "Агенты"), keys: "агенты agents approve автоодобрение" },
@@ -381,6 +381,22 @@ export function SettingsModal({
                 onChange={(e) => store.setNotifyOnDone(e.target.checked)}
               />
               {t("settings.notifyOnDone", "Уведомлять о завершении агента")}
+            </label>
+            <label className="checkbox-row max-w-[320px] break-words leading-snug" title={t("settings.autoAcceptReviewHint")}>
+              <input
+                type="checkbox"
+                checked={store.autoAcceptReview}
+                onChange={(e) => store.setAutoAcceptReview(e.target.checked)}
+              />
+              {t("settings.autoAcceptReview")}
+            </label>
+            <label className="checkbox-row max-w-[320px] break-words leading-snug" title={t("settings.reviewDecorationsHint")}>
+              <input
+                type="checkbox"
+                checked={store.reviewDecorations}
+                onChange={(e) => store.setReviewDecorations(e.target.checked)}
+              />
+              {t("settings.reviewDecorations")}
             </label>
             </div>
           </div>

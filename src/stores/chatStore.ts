@@ -8,6 +8,7 @@ import type {
 } from "../types/opencode";
 import { opencode } from "../services/backend";
 import { useSettingsStore } from "./settingsStore";
+import { toast } from "./toastStore";
 
 export interface ChatError {
   message: string;
@@ -454,6 +455,14 @@ export const useChatStore = create<ChatState>()((set, get) => ({
               if (!root) return;
               const files = await checkpointsApi.diff(root, cpId);
               if (files.length === 0) return;
+              // Auto-accept mode: skip the ReviewBanner confirmation, the
+              // changes simply land (toast only).
+              if (useSettingsStore.getState().autoAcceptReview) {
+                toast.success(
+                  `Изменения приняты автоматически (${files.length})`,
+                );
+                return;
+              }
               set((st) => ({
                 pendingReview: {
                   ...st.pendingReview,

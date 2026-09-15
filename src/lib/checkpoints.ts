@@ -84,3 +84,40 @@ export async function maybeAutoCheckpoint(root: string, label: string): Promise<
     /* never break sending */
   }
 }
+
+/**
+ * Revert a whole run to its pre-run checkpoint AND sync open editor tabs
+ * with the restored disk state (otherwise tabs keep showing stale text).
+ * Throws on restore failure; tab sync is best-effort.
+ */
+export async function revertRun(root: string, checkpointId: string): Promise<void> {
+  await checkpointsApi.restore(root, checkpointId);
+  try {
+    const { readFile, useEditorStore } = await import("../stores/editorStore");
+    const tabs = useEditorStore.getState().tabs.map((t) => t.path);
+    const { getModelValue, setModelValue } = await import(
+      "../components/editor/EditorInstance"
+    );
+    const ed = useEditorStore.getState();
+    await Promise.all(
+      tabs.map(async (p) => {
+        try {
+          const disk = await readFile(p);
+          if (getModelValue(p) !== undefined) setModelValue(p, disk);
+          ed.markSaved(p);
+        } catch {
+          /* one bad tab must not kill the sync */
+        }
+      }),
+    );
+    try {
+      const { useDiagnosticsStore } = await import("../stores/diagnosticsStore");
+      const diag = useDiagnosticsStore.getState();
+      await Promise.all(tabs.map((p) => diag.refreshFile(p).catch(() => {})));
+    } catch {
+      /* diagnostics are best-effort */
+    }
+  } catch {
+    /* model sync is best-effort */
+  }
+}
