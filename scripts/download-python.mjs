@@ -12,7 +12,14 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = path.join(root, "src-tauri", "binaries", "python");
 const force = process.argv.includes("--force");
 
-const PY_VERSION = "3.12.10";
+// Pinned sidecar versions (scripts/versions.json); env wins for one-off bumps.
+let PINS = {};
+try {
+  PINS = JSON.parse(readFileSync(path.join(root, "scripts", "versions.json"), "utf8"));
+} catch {
+  /* defaults below */
+}
+const PY_VERSION = process.env.NEXUS_PYTHON ?? PINS.python ?? "3.12.10";
 const MARKER = path.join(outDir, ".version");
 
 const ZIPS = {
@@ -67,7 +74,7 @@ console.log(`[python] placed: ${outDir}`);
 // minimal network (or fully offline when already cached).
 const wheelsDir = path.join(root, "src-tauri", "binaries", "python-wheels");
 const wheelsMarker = path.join(wheelsDir, ".version");
-const DEBUGPY_PIN = process.env.NEXUS_DEBUGPY ?? null; // e.g. 1.8.21, else latest
+const DEBUGPY_PIN = process.env.NEXUS_DEBUGPY ?? PINS.debugpy ?? null; // e.g. 1.8.21, else latest
 async function fetchBuf(url, what) {
   const r = await fetch(url, { headers: { "User-Agent": "nexuscode-build" } });
   if (!r.ok) throw new Error(`${what}: HTTP ${r.status}`);

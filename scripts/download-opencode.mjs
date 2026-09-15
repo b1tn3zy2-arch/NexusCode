@@ -1,7 +1,7 @@
 // Downloads the OpenCode CLI as a Tauri sidecar for the current platform.
 // Result: src-tauri/binaries/opencode-<target-triple>[.exe]
 // Cached across builds; pass --force to re-download.
-import { existsSync, mkdirSync, readdirSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { rename, rm, writeFile } from "node:fs/promises";
 import { execSync } from "node:child_process";
 import path from "node:path";
@@ -30,6 +30,16 @@ if (!triple) {
   process.exit(1);
 }
 
+// Pinned sidecar version (scripts/versions.json) — reproducible builds.
+// Env NEXUS_OPENCODE wins for one-off bumps (e.g. NEXUS_OPENCODE=v9.9.9).
+let PINS = {};
+try {
+  PINS = JSON.parse(readFileSync(path.join(root, "scripts", "versions.json"), "utf8"));
+} catch {
+  /* latest fallback below */
+}
+const OPENCODE_PIN = process.env.NEXUS_OPENCODE ?? PINS.opencode ?? null;
+
 const exeSuffix = triple.includes("windows") ? ".exe" : "";
 const outPath = path.join(outDir, `opencode-${triple}${exeSuffix}`);
 
@@ -38,17 +48,23 @@ if (!force && existsSync(outPath)) {
   process.exit(0);
 }
 
-console.log(`[sidecar] fetching latest OpenCode release for ${triple}...`);
+const releaseUrl = OPENCODE_PIN
+  ? `https://api.github.com/repos/anomalyco/opencode/releases/tags/${OPENCODE_PIN}`
+  : "https://api.github.com/repos/anomalyco/opencode/releases/latest";
+console.log(`[sidecar] fetching ${OPENCODE_PIN ? `pinned OpenCode ${OPENCODE_PIN}` : "latest OpenCode release"} for ${triple}...`);
 
-const res = await fetch(
-  "https://api.github.com/repos/anomalyco/opencode/releases/latest",
-  { headers: { "User-Agent": "nexuscode-build" } },
-);
+const res = await fetch(releaseUrl, {
+  headers: { "User-Agent": "nexuscode-build" },
+});
 if (!res.ok) {
-  console.error(`[sidecar] GitHub API failed: ${res.status}`);
+  console.error(`[sidecar] GitHub API failed: ${res.status} (${releaseUrl})`);
   process.exit(1);
 }
 const release = await res.json();
+if (OPENCODE_PIN && release.tag_name !== OPENCODE_PIN) {
+  console.error(`[sidecar] tag mismatch: wanted ${OPENCODE_PIN}, got ${release.tag_name}`);
+  process.exit(1);
+}
 
 const assets = release.assets ?? [];
 const pickWindows = () =>

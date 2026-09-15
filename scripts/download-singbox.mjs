@@ -2,17 +2,24 @@
 // Result: src-tauri/binaries/sing-box-<target-triple>[.exe]
 // Cached across builds; pass --force to re-download.
 // Pinned version: bump SINGBOX_VERSION deliberately after testing.
-import { existsSync, mkdirSync, readdirSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { rename, rm, writeFile } from "node:fs/promises";
 import { execSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const SINGBOX_VERSION = "v1.14.0";
-
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = path.join(root, "src-tauri", "binaries");
 const force = process.argv.includes("--force");
+
+// Pinned sidecar versions (scripts/versions.json); env wins for one-off bumps.
+let PINS = {};
+try {
+  PINS = JSON.parse(readFileSync(path.join(root, "scripts", "versions.json"), "utf8"));
+} catch {
+  /* pinned fallback below */
+}
+const SINGBOX_VERSION = process.env.NEXUS_SINGBOX ?? PINS.singbox ?? "v1.14.0";
 
 const TRIPLE_MAP = {
   "win32_x64": "x86_64-pc-windows-msvc",
